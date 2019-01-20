@@ -29,8 +29,12 @@ func RequestStats() gin.HandlerFunc {
 		req := metrics.GetOrRegisterMeter(ginRequestMetric, nil)
 		req.Mark(1)
 
+		since := time.Since(start)
 		latency := metrics.GetOrRegisterTimer(ginLatencyMetric, nil)
-		latency.UpdateSince(start)
+		latency.Update(since)
+
+		urlLatency := metrics.GetOrRegisterTimer(fmt.Sprintf("%s.%s", ginLatencyMetric, c.Request.URL.Path), nil)
+		urlLatency.Update(since)
 
 		status := metrics.GetOrRegisterMeter(fmt.Sprintf("%s.%d", ginStatusMetric, c.Writer.Status()), nil)
 		status.Mark(1)
